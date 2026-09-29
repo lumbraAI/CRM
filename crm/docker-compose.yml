@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: crm_api:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+
+  php:
+    image: php:8.1-cli
+    command: php -S 0.0.0.0:8000 -t public
+    volumes:
+      - ./:/var/www/html
+    expose:
+      - '8000'
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - '80:80'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - php
+
+# Notes: after docker-compose up, open http://localhost (nginx) which proxies to PHP and API
